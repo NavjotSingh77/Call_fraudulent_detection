@@ -17,11 +17,14 @@ nltk>=3.8.0
 langdetect>=1.0.9
 regex>=2023.6.3
 
-# API
+# API & Gateway
 fastapi>=0.103.0
 uvicorn[standard]>=0.23.0
 python-multipart>=0.0.6
 pydantic>=2.0.0
+pydantic-settings>=2.0.0
+sqlalchemy>=2.0.0
+jinja2>=3.1.0
 
 # Data & utilities
 requests>=2.31.0

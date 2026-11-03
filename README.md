@@ -504,6 +504,117 @@ Output Layer
 
 ---
 
+## Windows Automated Execution Script (`run_system.bat`)
+
+The system includes a dedicated Windows automation script (`run_system.bat`) designed for zero-friction setup, model management, and server execution.
+
+### Features
+- **Virtual Environment Automation:** Automatically checks for, creates, and activates `.venv`.
+- **Dependency Management:** Automatically installs and verifies packages from `requirements.txt`.
+- **Intelligent Training Prevention:** Does **not** retrain an existing model if valid production artifacts (`model.keras`, `vectorizer_config.json`, `label_encoder.pkl`, `model_config.json`) already exist in `models/`, unless explicitly forced with `--force-train`.
+- **Automatic Browser Launch:** Polls `/api/v1/health` until the API is fully ready and automatically opens the Web UI dashboard in your default browser.
+- **Support for Modes:** `all`, `train`, `serve`, `test`.
+
+### Quick Windows Commands
+
+```cmd
+:: 1. Complete Workflow: Setup, Train (if needed), Launch Gateway & Web UI
+run_system.bat
+
+:: Or explicitly:
+run_system.bat all
+
+:: 2. Force Retraining of the Model (even if model.keras already exists):
+run_system.bat all --force-train
+
+:: 3. Train & Evaluate the BiLSTM Model only (does not start server):
+run_system.bat train
+
+:: 4. Force Retrain only:
+run_system.bat train --force-train
+
+:: 5. Launch FastAPI Gateway & Web UI immediately (serve only):
+run_system.bat serve
+
+:: 6. Run the 78-test Unit & Integration Test Suite:
+run_system.bat test
+```
+
+---
+
+## Responsive Web UI Dashboard
+
+FastAPI serves a clean, responsive, dark-mode dashboard at `http://127.0.0.1:8000/` (or `/ui`):
+
+- **Drag-and-Drop Audio Upload:** Accepts `.wav`, `.mp3`, `.flac`, `.ogg`, and `.m4a` files with client-side audio player preview.
+- **Analysis Modes:** Toggle between **Full-Call Classification** and **Segment-Level Analysis** (30-second windows with 15-second stride).
+- **KPI Metrics:** Displays overall classification (`FRAUD`, `LEGITIMATE`, `UNCERTAIN`), color-coded probability gauge, confidence tier, and analyst review status.
+- **Transcript Viewer:** Displays full call transcription, detected language code, and one-click copy to clipboard.
+- **Linguistic Risk Flags:** Highlights detected threats, urgency, impersonation terms, financial payment demands, or OTP requests.
+- **Segment Timeline Table:** Detailed table showing start, end, duration, exploratory provenance, and fraud score for each 30-second window.
+- **API Error Inspection:** User-friendly alert banner with full error details and troubleshooting hints when API errors occur.
+
+---
+
+## Modular Backend & Gateway Architecture
+
+The API backend is designed with strict enterprise separation of concerns so that future Android mobile applications and relational databases (PostgreSQL, SQLite) can be integrated without modifying the ML inference engine:
+
+```text
+src/
+├── api/
+│   ├── main.py              # Main FastAPI app, lifespan, CORS, and middleware
+│   ├── middleware.py        # Correlation ID, telemetry timing, and API-key auth
+│   ├── dependencies.py      # Dependency injection (DB session, repository, model service)
+│   ├── v1/
+│   │   ├── router.py        # Prefix /api/v1 aggregation
+│   │   └── endpoints/
+│   │       ├── health.py    # GET /api/v1/health
+│   │       ├── model_info.py# GET /api/v1/model-info
+│   │       ├── predict.py   # POST /api/v1/predict, POST /api/v1/predict/segments
+│   │       └── transcribe.py# POST /api/v1/transcribe
+│   └── web/
+│       └── router.py        # Serves dashboard HTML template at / and /ui
+├── schemas/                 # Pydantic v2 data transfer objects (API contracts)
+│   ├── common.py            # HealthResponse, ErrorResponse
+│   ├── prediction.py        # PredictionResponse, SegmentResult
+│   ├── transcription.py     # TranscriptionResponse, TranscriptSegment
+│   └── model_info.py        # ModelInfoResponse
+├── services/                # Business & ML service layer
+│   ├── model_service.py     # Dedicated ModelService (loads .keras; isolated from training code)
+│   ├── audio_service.py     # Format validation, streaming temp storage, preprocessing
+│   └── transcription_service.py # Whisper execution and filesystem caching
+├── db/                      # Database connection and ORM models
+│   ├── session.py           # Engine & SessionLocal (SQLite / PostgreSQL)
+│   ├── base.py              # DeclarativeBase
+│   └── models.py            # CallRecord and SegmentRecord tables
+├── repositories/            # Repository pattern (data access layer)
+│   ├── base.py              # IRepository generic interface
+│   └── call_repository.py   # CallRepository CRUD & prediction log persistence
+├── config/
+│   └── settings.py          # Environment settings (.env) & config.yaml loader
+└── web/                     # Frontend templates and static assets
+    ├── templates/index.html # Dashboard HTML
+    └── static/              # CSS styles and JavaScript logic
+```
+
+### Future Android App Integration
+- **Identical REST Contract:** The Android app can call `POST /api/v1/predict` (multipart form audio upload) and receive the exact same structured JSON contract.
+- **Authentication Ready:** Set `APP_API_KEY_ENABLED=true` in `.env` and pass `X-API-Key: your_key` or `Authorization: Bearer your_key` from the Android OkHttp/Retrofit client.
+- **CORS Configured:** Add your Android app domain or local network IP in `APP_CORS_ORIGINS`.
+
+### Database Configuration (PostgreSQL Ready)
+Configure `DATABASE_URL` in `.env`:
+```env
+# Embedded default:
+DATABASE_URL=sqlite:///./data/fraud_calls.db
+
+# Production PostgreSQL:
+# DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/fraud_db
+```
+
+---
+
 ## Testing
 
 ```bash

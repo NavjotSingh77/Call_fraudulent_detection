@@ -363,6 +363,36 @@ def save_model_artifacts(
     saved_paths["model_config"] = config_path
     logger.info("Model config snapshot saved to %s", config_path)
 
+    # 5. Production Model Metadata  --------------------------------------------
+    from datetime import datetime, timezone
+    try:
+        import tensorflow as tf  # type: ignore
+        tf_version = tf.__version__
+    except Exception:
+        tf_version = "unknown"
+
+    metadata = {
+        "version": config.get("project", {}).get("version", "1.0.0"),
+        "model_type": "BiLSTM",
+        "framework": f"TensorFlow/{tf_version}",
+        "serialization_format": ".keras" if (models_dir / "model.keras").exists() else "SavedModel",
+        "trained_timestamp": datetime.now(timezone.utc).isoformat(),
+        "classes": ["legitimate", "fraud"],
+        "target_metric": config.get("training", {}).get("checkpoint_metric", "val_recall"),
+        "vocabulary_size": config.get("text_preprocessing", {}).get("vocabulary_size", 20000),
+        "embedding_dim": config.get("model", {}).get("embedding_dim", 128),
+        "lstm_units": config.get("model", {}).get("lstm_units", 128),
+        "disclaimer": (
+            "Model predictions are probabilistic statistical estimates and do NOT "
+            "constitute legal proof of fraud."
+        ),
+    }
+    meta_path = models_dir / "model_metadata.json"
+    with open(meta_path, "w", encoding="utf-8") as fh:
+        json.dump(metadata, fh, ensure_ascii=False, indent=2)
+    saved_paths["model_metadata"] = meta_path
+    logger.info("Model metadata saved to %s", meta_path)
+
     return saved_paths
 
 

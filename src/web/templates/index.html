@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fraudulent Phone Call Detection System</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">🛡️</div>
+        <div>
+          <h1>Call Fraud Detection AI</h1>
+          <p class="subtitle">BiLSTM Speech-to-Text Telephony Risk Analytics</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="system-status" class="status-badge status-loading">
+          <span class="status-dot"></span> Checking System...
+        </div>
+      </div>
+    </header>
+
+    <!-- Error Alert Banner -->
+    <div id="alert-banner" class="alert-banner hidden">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <strong id="alert-title">API Error</strong>
+        <p id="alert-message">Something went wrong.</p>
+      </div>
+      <button class="alert-close" id="alert-close">&times;</button>
+    </div>
+
+    <!-- Main Grid -->
+    <main class="main-content">
+      <!-- Upload Card -->
+      <section class="card upload-card">
+        <div class="card-header">
+          <h2>1. Input Audio Call</h2>
+          <span class="badge">WAV / MP3 / FLAC / OGG</span>
+        </div>
+
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-zone-icon">🎙️</div>
+          <p class="drop-zone-text"><strong>Drag & drop call audio here</strong> or <span class="highlight">browse</span></p>
+          <input type="file" id="audio-input" accept=".wav,.mp3,.flac,.ogg,.m4a" class="file-input">
+        </div>
+
+        <div id="file-info" class="file-info hidden">
+          <div class="file-details">
+            <span class="file-icon">🎵</span>
+            <div class="file-meta">
+              <strong id="file-name">call_sample.wav</strong>
+              <span id="file-size">0.0 MB</span>
+            </div>
+          </div>
+          <audio id="audio-player" controls class="audio-player"></audio>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+          <label class="mode-label">Prediction Mode:</label>
+          <div class="mode-options">
+            <label class="radio-pill">
+              <input type="radio" name="predict-mode" value="full" checked>
+              <span>Full-Call Analysis</span>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="predict-mode" value="segments">
+              <span>Segment-Level (30s Windows)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button id="btn-predict" class="btn btn-primary" disabled>
+            <span class="btn-spinner hidden" id="spinner-predict"></span>
+            <span class="btn-text">Detect Fraud</span>
+          </button>
+          <button id="btn-transcribe" class="btn btn-secondary" disabled>
+            <span class="btn-spinner hidden" id="spinner-transcribe"></span>
+            <span class="btn-text">Transcribe Only</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Results Card -->
+      <section id="results-card" class="card results-card hidden">
+        <div class="card-header">
+          <h2>2. Classification & Risk Report</h2>
+          <span id="call-id-badge" class="badge">call_id: -</span>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card" id="kpi-prediction">
+            <span class="kpi-label">Overall Classification</span>
+            <span id="res-overall" class="kpi-value badge-status">-</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Fraud Probability</span>
+            <div class="prob-wrapper">
+              <span id="res-prob" class="kpi-value">0.0%</span>
+              <div class="prob-bar-bg">
+                <div id="res-prob-bar" class="prob-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Confidence Tier</span>
+            <span id="res-confidence" class="kpi-value">-</span>
+          </div>
+          <div class="kpi-card" id="kpi-review">
+            <span class="kpi-label">Human Review</span>
+            <span id="res-review" class="kpi-value">-</span>
+          </div>
+        </div>
+
+        <!-- Risk Indicators -->
+        <div class="section-box">
+          <h3>Detected Linguistic Risk Indicators</h3>
+          <ul id="risk-list" class="risk-list">
+            <li class="empty-hint">No high-risk keywords detected.</li>
+          </ul>
+        </div>
+
+        <!-- Transcript Section -->
+        <div class="section-box">
+          <div class="section-box-header">
+            <h3>Call Transcript (<span id="transcript-lang">en</span>)</h3>
+            <button id="btn-copy-transcript" class="btn-copy" title="Copy transcript">📋 Copy</button>
+          </div>
+          <div id="transcript-body" class="transcript-body">
+            <em>No transcription available.</em>
+          </div>
+        </div>
+
+        <!-- Segment Results Table -->
+        <div id="segment-section" class="section-box hidden">
+          <h3>Windowed Segment Breakdown (30s Duration / 15s Stride)</h3>
+          <div class="table-container">
+            <table class="segments-table">
+              <thead>
+                <tr>
+                  <th>Window</th>
+                  <th>Duration</th>
+                  <th>Probability</th>
+                  <th>Annotation Provenance</th>
+                  <th>Transcript Snippet</th>
+                </tr>
+              </thead>
+              <tbody id="segments-table-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box">
+          <strong>Research & Operational Disclaimer:</strong>
+          <p id="res-disclaimer">Model predictions are probabilistic statistical estimates and do NOT constitute legal proof of fraud. Human verification is strictly recommended before taking any consequential action.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>AI-Based Fraudulent Phone Call Detection System &bull; Version 1.0.0 &bull; TensorFlow/Keras & Whisper Local Inference</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

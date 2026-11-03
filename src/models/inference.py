@@ -13,7 +13,7 @@ Output explicitly states predictions are model estimates, not proof of fraud.
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -50,7 +50,7 @@ class PredictionResult:
     review_required: bool = False
     model_version: str = ""
     prediction_timestamp: str = field(
-        default_factory=lambda: datetime.utcnow().isoformat()
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
     disclaimer: str = _DISCLAIMER
 
