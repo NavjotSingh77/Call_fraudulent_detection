@@ -1,0 +1,34 @@
+{
+  "total_records": 10,
+  "audio": {
+    "valid": 0,
+    "invalid": 10,
+    "missing": 0
+  },
+  "transcripts": {
+    "available": 0,
+    "missing": 10
+  },
+  "label_distribution": {
+    "fraud": 6,
+    "legitimate": 3,
+    "uncertain": 1
+  },
+  "label_status_distribution": {
+    "verified": 8,
+    "weak": 1,
+    "unknown": 1
+  },
+  "validation_errors_sample": [
+    "File not found: data\\raw\\call_001.wav",
+    "File not found: data\\raw\\call_002.wav",
+    "File not found: data\\raw\\call_003.wav",
+    "File not found: data\\raw\\call_004.wav",
+    "File not found: data\\raw\\call_005.wav",
+    "File not found: data\\raw\\call_006.wav",
+    "File not found: data\\raw\\call_007.wav",
+    "File not found: data\\raw\\call_008.wav",
+    "File not found: data\\raw\\call_009.wav",
+    "File not found: data\\raw\\call_010.wav"
+  ]
+}

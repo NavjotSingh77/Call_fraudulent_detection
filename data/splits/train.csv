@@ -1,0 +1,8 @@
+call_id,audio_path,transcript,language,label,label_status,source,recording_type,case_pdf
+call_001,data/raw/call_001.wav,Your social security number has been suspended. Call immediately or face arrest warrant.,en,fraud,verified,ncsu_ftc,robocall,pdf_files/case_01.pdf
+call_003,data/raw/call_003.wav,Your bank account has been compromised. Provide your one-time password OTP to verify identity.,en,fraud,verified,ncsu_ftc,robocall,pdf_files/case_03.pdf
+call_004,data/raw/call_004.wav,Final notice. Press 1 to speak with an officer before law enforcement is dispatched.,en,fraud,weak,ncsu_ftc,robocall,pdf_files/case_04.pdf
+call_005,data/raw/call_005.wav,Congratulations you have won a five hundred dollar gift card claim at scam-url.com now.,en,fraud,verified,ncsu_ftc,robocall,pdf_files/case_05.pdf
+call_006,data/raw/call_006.wav,Suspicious wire transfer detected on your credit card. Contact customer support immediately.,en,fraud,verified,ncsu_ftc,robocall,pdf_files/case_06.pdf
+call_007,data/raw/call_007.wav,"Hello, this is Dr. Smith's office confirming your dental appointment for Tuesday at 3pm.",en,legitimate,verified,medical_clinic,reminder,
+call_009,data/raw/call_009.wav,Your package has been delivered to your front porch. Have a nice weekend.,en,legitimate,verified,courier,notification,

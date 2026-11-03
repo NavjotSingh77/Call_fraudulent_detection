@@ -1,0 +1,2 @@
+call_id,audio_path,transcript,language,label,label_status,source,recording_type,case_pdf
+call_002,data/raw/call_002.wav,This is the IRS. You owe back taxes. Pay now with gift cards to avoid federal lawsuit.,en,fraud,verified,ncsu_ftc,robocall,pdf_files/case_02.pdf

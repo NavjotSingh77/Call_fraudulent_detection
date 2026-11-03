@@ -1,0 +1,2 @@
+call_id,audio_path,transcript,language,label,label_status,source,recording_type,case_pdf
+call_008,data/raw/call_008.wav,"Good morning, thank you for calling customer care. How can I assist you with your subscription today?",en,legitimate,verified,support_center,human_dialogue,

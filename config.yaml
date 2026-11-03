@@ -1,0 +1,105 @@
+# Fraud Call Detection System Configuration
+
+project:
+  name: "fraud-call-detection"
+  version: "1.0.0"
+  random_seed: 42
+
+paths:
+  data_raw: "data/raw"
+  data_external: "data/external"
+  data_processed_audio: "data/processed/audio"
+  data_processed_transcripts: "data/processed/transcripts"
+  data_metadata: "data/metadata"
+  data_splits: "data/splits"
+  models: "models"
+  reports: "reports"
+  figures: "reports/figures"
+  evaluation: "reports/evaluation"
+  manifest: "data/metadata/manifest.csv"
+
+dataset:
+  ncsu:
+    repo_url: "https://github.com/wspr-ncsu/robocall-audio-dataset"
+    raw_github_base: "https://raw.githubusercontent.com/wspr-ncsu/robocall-audio-dataset/main"
+    metadata_csv_url: "https://raw.githubusercontent.com/wspr-ncsu/robocall-audio-dataset/main/metadata.csv"
+    label: "fraud"
+    label_status: "verified"
+    source: "ncsu_ftc"
+    recording_type: "robocall"
+  external:
+    # Placeholder for future Hindi/Hinglish dataset
+    hindi_hinglish:
+      enabled: false
+      path: "data/external/hindi_hinglish"
+      label_status: "unknown"
+
+audio:
+  target_sample_rate: 16000
+  target_channels: 1  # mono
+  min_duration_seconds: 1.0
+  max_duration_seconds: 3600.0
+  normalize_amplitude: true
+  silence_threshold_db: -60.0
+  noise_reduction: false  # optional, requires noisereduce
+  segment_duration_seconds: 30
+  segment_stride_seconds: 15
+  supported_formats:
+    - ".wav"
+    - ".mp3"
+    - ".flac"
+    - ".ogg"
+    - ".m4a"
+
+transcription:
+  whisper_model: "base"   # tiny, base, small, medium, large
+  device: "cpu"           # cpu or cuda
+  language: null          # null = auto-detect
+  translate: false        # never translate; preserve original language
+  cache_transcripts: true
+  batch_size: 1
+
+text_preprocessing:
+  max_sequence_length: 256
+  vocabulary_size: 20000
+  min_word_frequency: 2
+  remove_stopwords: false  # preserve fraud-relevant negations etc.
+
+model:
+  embedding_dim: 128
+  lstm_units: 128
+  dropout_rate: 0.3
+  dense_units: 64
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 50
+  early_stopping_patience: 5
+  reduce_lr_patience: 3
+  reduce_lr_factor: 0.5
+  num_classes: 2  # 2=binary fraud/legitimate; 3=fraud/legitimate/uncertain
+
+training:
+  test_size: 0.15
+  val_size: 0.15
+  stratify: true
+  group_split: true  # prevent leakage from same source/call
+  class_weight_method: "balanced"  # balanced or none
+  checkpoint_metric: "val_recall"
+  checkpoint_mode: "max"
+
+inference:
+  confidence_threshold_high: 0.85
+  confidence_threshold_medium: 0.65
+  segment_aggregation: "weighted_mean"  # weighted_mean, max, vote
+  review_threshold: 0.65  # below this → human review required
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  max_upload_size_mb: 100
+  log_level: "info"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+  file: "logs/fraud_detection.log"
